@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nifty 50 Stocks</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card-img-top { height: 120px; object-fit: contain; padding: 15px; }
+        .stock-card { transition: transform 0.2s; min-height: 280px; cursor: pointer; }
+        .stock-card:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .code-name { font-weight: 600; color: #2c3e50; }
+        .company-name { font-size: 0.9em; color: #7f8c8d; }
+        /* Loading animation styles */
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <h1 class="text-center mb-4">Nifty 50 Constituents</h1>
+        <div class="row g-4">
+            {% for stock in stocks %}
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                <div class="card h-100 stock-card shadow-sm" onclick="submitForm('{{ stock.code }}')">
+                    <img src="{{ url_for('static', filename=stock.logo) }}"
+                         class="card-img-top"
+                         alt="{{ stock.name }}"
+                         onerror="this.onerror=null;this.src='https://via.placeholder.com/150?text=Logo+Missing'">
+                    <div class="card-body text-center">
+                        <div class="code-name mb-2">{{ stock.code }}</div>
+                        <div class="company-name">{{ stock.name }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <form id="predictionForm" method="post" action="/predict" style="display: none;">
+            <input type="hidden" name="stock_code" id="stockCode">
+        </form>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <div class="loader"></div>
+                    <p>Predicting stock prices... Please wait.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function submitForm(code) {
+            // Show loading modal
+            const modal = new bootstrap.Modal(document.getElementById('loadingModal'), {
+                backdrop: 'static',
+                keyboard: false
+            });
+            modal.show();
+
+            // Set form value and submit
+            document.getElementById('stockCode').value = code;
+            document.getElementById('predictionForm').submit();
+        }
+
+        // Hide modal when page loads (in case of navigation)
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalElement = document.getElementById('loadingModal');
+            const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+            modal.hide();
+        });
+    </script>
+</body>
+</html>

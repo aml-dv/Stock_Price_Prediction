@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload ZIP File</title>
+</head>
+<body>
+    <h1>Upload Stock Data ZIP File</h1>
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".zip">
+        <input type="submit" value="Upload">
+    </form>
+    <div id="stock-selection" style="display:none;">
+        <h2>Select Stock and Forecast Days</h2>
+        <select id="stock-select" name="stock"></select>
+        <input type="number" id="forecast-days" name="forecast_days" value="70" min="1">
+        <button onclick="predictStock()">Predict</button>
+    </div>
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    const select = document.getElementById('stock-select');
+                    data.stock_options.forEach(option => {
+                        const opt = document.createElement('option');
+                        opt.value = option;
+                        opt.innerText = option;
+                        select.appendChild(opt);
+                    });
+                    document.getElementById('stock-selection').style.display = 'block';
+                }
+            });
+        });
+
+        function predictStock() {
+            const stock = document.getElementById('stock-select').value;
+            const forecastDays = document.getElementById('forecast-days').value;
+            fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ stock: stock, forecast_days: forecastDays })
+            })
+            .then(response => response.text())
+            .then(html => {
+                document.open();
+                document.write(html);
+                document.close();
+            });
+        }
+    </script>
+</body>
+</html>
